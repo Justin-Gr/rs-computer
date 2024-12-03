@@ -1,0 +1,4 @@
+ADD r3 r1 r2
+SUB r2 r2 r2
+LDI r4 0xFF
+HLT

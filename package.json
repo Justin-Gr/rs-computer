@@ -1,0 +1,12 @@
+{
+  "name": "rs-computer",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/main"
+  },
+  "dependencies": {
+    "indefinite": "^2.5.1"
+  }
+}
