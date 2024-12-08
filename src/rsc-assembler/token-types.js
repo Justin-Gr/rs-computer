@@ -40,8 +40,8 @@ class TokenType {
 const REGISTER = new TokenType(
 	4,
 	(token) => {
-		const regex = new RegExp('^R(1[0-5]|[0-9])$'); // from r0 to r15
-		return regex.test(token)
+		const regex = /^R(1[0-5]|[0-9])$/; // from r0 to r15
+		return regex.test(token.toUpperCase())
 			? null
 			: new Error(`'${ token }' does not match any known register.`);
 	},

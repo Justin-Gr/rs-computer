@@ -1,6 +1,5 @@
 const fs = require("node:fs");
 const readline = require("node:readline");
-const { isNotBlank } = require("./string-utils");
 
 /**
  * Reads the file and returns a list of its non-blank lines.
@@ -10,16 +9,14 @@ const { isNotBlank } = require("./string-utils");
  */
 async function extractLinesFromFile(filename) {
 	const fileStream = fs.createReadStream(filename);
-	const rl = readline.createInterface({
+	const rlInterface = readline.createInterface({
 		input: fileStream,
 		crlfDelay: Infinity
 	});
 
 	const lines = [];
-	for await (const line of rl) {
-		if (isNotBlank(line)) {
-			lines.push(line.trim());
-		}
+	for await (const line of rlInterface) {
+		lines.push(line.trim());
 	}
 
 	return lines;

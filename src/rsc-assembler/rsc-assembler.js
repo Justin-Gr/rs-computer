@@ -1,5 +1,8 @@
 const { extractLinesFromFile } = require('../utils/file-utils');
 const { Instructions } = require('./instructions');
+const { isNotBlank } = require('../utils/string-utils');
+
+const COMMENT_SYMBOLS = ['#', '//', '--'];
 
 /**
  * Read the content of the given RSC program and assemble it to machine code.
@@ -10,12 +13,21 @@ const { Instructions } = require('./instructions');
 async function assembleRscToMachineCode(rscFilename) {
 	const lines = await extractLinesFromFile(rscFilename);
 
-	return lines
-		.map(line => line.toLocaleUpperCase())
+	const cleanedLines = lines
+		.map(line => {
+			// Removing all comments.
+			COMMENT_SYMBOLS.forEach(commentSymbol => {
+				line = line.split(commentSymbol)[0].trim();
+			});
+			return line;
+		})
+		.filter(line => isNotBlank(line)); // Removing blank lines.
+
+	return cleanedLines
 		.map((line, index) => {
 			const tokens = line.split(/\s+/); // split by spaces
 			const instructionToken = tokens.shift();
-			const instruction = Instructions[instructionToken];
+			const instruction = Instructions[instructionToken.toUpperCase()];
 			if (instruction == null) {
 				throw new Error(`at line ${ index + 1 }: '${ instructionToken }' does not match any known instruction.`);
 			}
