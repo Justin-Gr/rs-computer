@@ -4,9 +4,16 @@
   "main": "src/main.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node src/main"
+    "start": "node src/main",
+    "start-load": "npm run start && npm run worldedit-load",
+    "worldedit-load": "sh scripts/worldedit_load.sh"
   },
   "dependencies": {
-    "indefinite": "^2.5.1"
+    "debug": "^4.3.7",
+    "indefinite": "^2.5.1",
+    "prismarine-block": "^1.19.0",
+    "prismarine-registry": "^1.10.0",
+    "prismarine-schematic": "^1.2.3",
+    "vec3": "^0.1.10"
   }
 }

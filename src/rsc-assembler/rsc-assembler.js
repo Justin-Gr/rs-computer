@@ -7,13 +7,14 @@ const COMMENT_SYMBOLS = ['#', '//', '--'];
 /**
  * Read the content of the given RSC program and assemble it to machine code.
  *
- * @param rscFilename {string} The RSC program filename.
+ * @param rscPath {string} The RSC program file path.
  * @returns {Promise<number[]>} The resulting machine code.
  */
-async function assembleRscToMachineCode(rscFilename) {
-	const lines = await extractLinesFromFile(rscFilename);
+async function assembleRscToMachineCode(rscPath) {
+	const lines = await extractLinesFromFile(rscPath);
 
 	const cleanedLines = lines
+		.map(line => line.trim())
 		.map(line => {
 			// Removing all comments.
 			COMMENT_SYMBOLS.forEach(commentSymbol => {

@@ -1,4 +1,4 @@
-const { REGISTER, UINT } = require('./token-types');
+const { REGISTER, INT } = require('./token-types');
 
 const INSTRUCTION_SIZE = 16;
 const OPCODE_SIZE = 4;
@@ -86,7 +86,7 @@ const Instructions = Object.freeze({
 	),
 	LDI: new Instruction(
 		8,
-		[REGISTER, UINT(8)]
+		[REGISTER, INT(8)]
 	)
 });
 

@@ -1,14 +1,15 @@
 const { assembleRscToMachineCode } = require('./rsc-assembler/rsc-assembler');
-const { binaryRepresentation } = require('./utils/string-utils');
+const { binaryRepresentation } = require('./utils/number-utils');
 const { INSTRUCTION_SIZE } = require('./rsc-assembler/instructions');
+const { generateSchemFromMachineCode } = require('./schem-generator/schem-generator');
 
 const FILENAME = 'test';
-const RSC_FILENAME = `./programs/${ FILENAME }.rsc`;
-const SCHEM_FILENAME = `./build/${ FILENAME }.schem`;
+const RSC_PATH = `./programs/${ FILENAME }.rsc`;
+const SCHEM_PATH = `./build/${ FILENAME }.schem`;
 
 async function main() {
 	try {
-		const machineCode = await assembleRscToMachineCode(RSC_FILENAME);
+		const machineCode = await assembleRscToMachineCode(RSC_PATH);
 
 		// Pretty print
 		const machineCodePretty = machineCode
@@ -16,7 +17,7 @@ async function main() {
 			.join('\n');
 		console.log(machineCodePretty);
 
-		// await generateSchemFromMachineCode(machineCode, SCHEM_FILENAME);
+		await generateSchemFromMachineCode(machineCode, SCHEM_PATH);
 	}
 	catch (error) {
 		console.error(error);

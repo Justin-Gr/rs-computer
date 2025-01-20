@@ -4,11 +4,11 @@ const readline = require("node:readline");
 /**
  * Reads the file and returns a list of its non-blank lines.
  *
- * @param filename {string} the name of the file to read.
+ * @param path {string} the path of the file to read.
  * @returns {Promise<string[]>} the non-blank lines from the file.
  */
-async function extractLinesFromFile(filename) {
-	const fileStream = fs.createReadStream(filename);
+async function extractLinesFromFile(path) {
+	const fileStream = fs.createReadStream(path);
 	const rlInterface = readline.createInterface({
 		input: fileStream,
 		crlfDelay: Infinity
@@ -16,9 +16,8 @@ async function extractLinesFromFile(filename) {
 
 	const lines = [];
 	for await (const line of rlInterface) {
-		lines.push(line.trim());
+		lines.push(line);
 	}
-
 	return lines;
 }
 

@@ -2,10 +2,10 @@
  * TODO JGN
  *
  * @param machineCode {number[]}
- * @param schemFilename {string}
+ * @param schemPath {string}
  * @returns {Promise<void>}
  */
-async function generateSchemFromMachineCode(machineCode, schemFilename) {
+async function generateSchemFromMachineCode(machineCode, schemPath) {
 
 }
 

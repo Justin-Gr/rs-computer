@@ -1,4 +1,5 @@
 const a = require('indefinite');
+const { maxUIntValue } = require('../utils/number-utils');
 
 class TokenType {
 
@@ -53,16 +54,33 @@ const UINT = (size) => new TokenType(
 	size,
 	(token) => {
 		const tokenNumber = Number(token); // supports 0b and 0x notation
-		return !isNaN(tokenNumber) && tokenNumber >= 0 && tokenNumber < Math.pow(2, size)
+		return !isNaN(tokenNumber) && tokenNumber >= 0 && tokenNumber <= maxUIntValue(size)
 			? null
-			: new Error(`'${ token }' is not a valid representation of ${ a(size) }-bit integer.`);
+			: new Error(`'${ token }' is not a valid representation of ${ a(size) }-bit unsigned integer.`);
 	},
 	(token) => {
 		return Number(token);
 	}
 );
+const INT = (size) => new TokenType(
+	size,
+	(token) => {
+		const tokenNumber = Number(token); // supports 0b and 0x notation
+		// 8-bit example : accepts values from -128 to 255 (not just -128 to 127)
+		// What matters is the bit value held by the token
+		return !isNaN(tokenNumber) && tokenNumber >= -maxUIntValue(size - 1) - 1 && tokenNumber <= maxUIntValue(size)
+			? null
+			: new Error(`'${ token }' is not a valid representation of ${ a(size) }-bit integer.`);
+	},
+	(token) => {
+		const value = Number(token)
+		// Trick to force the value to be read as an unsigned int of the correct size
+		return (value & maxUIntValue(size)) >>> 0;
+	}
+);
 
 module.exports = {
 	REGISTER,
-	UINT
+	UINT,
+	INT
 };
