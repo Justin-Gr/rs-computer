@@ -24,6 +24,8 @@ const PAGE_ADDRESS_SIZE = 5;
 const SIDE_SIZE = 1;
 const PAGE_SIZE = 4;
 const ADDRESS_STRUCTURE = [PAGE_ADDRESS_SIZE, SIDE_SIZE, PAGE_SIZE];
+const ADDRESS_SIZE = ADDRESS_STRUCTURE.reduce((sum, value) => sum + value, 0);
+const MAX_INSTRUCTION_COUNT = maxUIntValue(ADDRESS_SIZE) + 1;
 
 /**
  * Generate a .schem file from the given machine code.
@@ -34,12 +36,13 @@ const ADDRESS_STRUCTURE = [PAGE_ADDRESS_SIZE, SIDE_SIZE, PAGE_SIZE];
  * @returns {Promise<void>} A promise that resolves when the .schem file has been successfully written.
  */
 async function generateSchemFromMachineCode(machineCode, schemPath) {
+	if (machineCode.length > MAX_INSTRUCTION_COUNT) {
+		throw new Error(`Too many instructions (${ machineCode.length }/${ MAX_INSTRUCTION_COUNT }), cannot generate .schem file.`);
+	}
+
 	// Schematic initialization (filled with air blocks)
 	const emptyArea = new Array(SCHEM_AREA.volume()).fill(0);
 	const schematic = new Schematic(MC_VERSION, SCHEM_AREA, BASE_OFFSET, [0], emptyArea);
-
-	// TODO JGN test instructions, counts from 0 to 1023
-	// machineCode = Array.from({ length: maxUIntValue(10) + 1 }, (_, i) => i);
 
 	// Schematic definition
 	machineCode.forEach((instruction, address) => {
@@ -54,7 +57,7 @@ async function generateSchemFromMachineCode(machineCode, schemPath) {
 
 	// Save the schematic
 	await fs.writeFile(schemPath, await schematic.write());
-	console.log(`Saved schem file to ${ schemPath }`);
+	console.log(`Saved .schem file to ${ schemPath }`);
 }
 
 /**
