@@ -87,6 +87,10 @@ const Instructions = Object.freeze({
 	LDI: new Instruction(
 		8,
 		[REGISTER, INT(8)]
+	),
+	ADI: new Instruction(
+		9,
+		[REGISTER, INT(8)]
 	)
 });
 

@@ -3,7 +3,7 @@ const { binaryRepresentation } = require('./utils/number-utils');
 const { INSTRUCTION_SIZE } = require('./rsc-assembler/instructions');
 const { generateSchemFromMachineCode } = require('./schem-generator/schem-generator');
 
-const FILENAME = 'test';
+const FILENAME = 'fibonacci_ugly';
 const RSC_PATH = `./programs/${ FILENAME }.rsc`;
 const SCHEM_PATH = `./build/${ FILENAME }.schem`;
 
