@@ -1,4 +1,4 @@
-const { REGISTER, INT } = require('./token-types');
+const { REGISTER, INT, BLANK, INSTRUCTION_ADDRESS, FLAG } = require('./token-types');
 
 const INSTRUCTION_SIZE = 16;
 const OPCODE_SIZE = 4;
@@ -21,15 +21,18 @@ class Instruction {
 	 * Returns the first validation error encountered, or null if all tokens are valid.
 	 *
 	 * @param tokens {string[]} The tokens to validate.
+	 * @param labelsIndex {{string:number}} TODO JGN
 	 * @returns {Error|null} The first validation error encountered, or null if all tokens are valid.
 	 */
-	validatePattern(tokens) {
-		if (tokens.length !== this.pattern.length) {
-			return Error(`Too ${ tokens.length > this.pattern.length ? 'many' : 'few' } arguments. Expected ${ this.pattern.length } but got ${ tokens.length }.`);
+	validatePattern(tokens, labelsIndex) {
+		const expectedPattern = this.pattern.filter(tokenType => tokenType.consumeToken);
+		
+		if (tokens.length !== expectedPattern.length) {
+			return Error(`Too ${ tokens.length > expectedPattern.length ? 'many' : 'few' } arguments. Expected ${ expectedPattern.length } but got ${ tokens.length }.`);
 		}
 
-		return this.pattern
-			.map((tokenType, index) => tokenType.validate(tokens[index]))
+		return expectedPattern
+			.map((tokenType, index) => tokenType.validate(tokens[index], labelsIndex))
 			.filter(error => error != null)
 			.shift() ?? null;
 	}
@@ -38,13 +41,16 @@ class Instruction {
 	 * Generates the machine code of the instruction using the provided tokens.
 	 *
 	 * @param tokens {string[]} The tokens to be used.
+	 * @param labelsIndex {{string:number}} TODO JGN
 	 * @returns {number} The resulting machine code of the instruction.
 	 */
-	assemble(tokens) {
+	assemble(tokens, labelsIndex) {
 		let machineCode = this.opcode;
 		let availableBits = INSTRUCTION_SIZE - OPCODE_SIZE;
-		this.pattern.forEach((tokenType, index) => {
-			machineCode = (machineCode << tokenType.size) | tokenType.assemble(tokens[index]);
+		const remainingTokens = [...tokens]; // Clones the token array
+		this.pattern.forEach(tokenType => {
+			const token = tokenType.consumeToken ? remainingTokens.shift() : null;
+			machineCode = (machineCode << tokenType.size) | tokenType.assemble(token, labelsIndex);
 			availableBits -= tokenType.size;
 		});
 		return machineCode << availableBits;
@@ -91,6 +97,14 @@ const Instructions = Object.freeze({
 	ADI: new Instruction(
 		9,
 		[REGISTER, INT(8)]
+	),
+	JMP: new Instruction(
+		10,
+		[BLANK(2), INSTRUCTION_ADDRESS]
+	),
+	BRC: new Instruction(
+		11,
+		[FLAG, INSTRUCTION_ADDRESS]
 	)
 });
 

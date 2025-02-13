@@ -73,7 +73,7 @@ async function generateSchemFromMachineCode(machineCode, schemPath) {
  */
 function readPartsOfAddress(address, partsStructure) {
 	const addressParts = [];
-	[...partsStructure] // clone the parts structure to avoid mutating the original when using reverse()
+	[...partsStructure] // Clones the structure to avoid mutating the original when using reverse()
 		.reverse()
 		.reduce((offset, partSize) => {
 			addressParts.unshift(readPartOfAddress(address, partSize, offset));

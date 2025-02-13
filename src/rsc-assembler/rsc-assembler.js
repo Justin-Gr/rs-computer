@@ -1,8 +1,7 @@
 const { extractLinesFromFile } = require('../utils/file-utils');
 const { Instructions } = require('./instructions');
 const { isNotBlank } = require('../utils/string-utils');
-
-const COMMENT_SYMBOLS = ['#', '//', '--'];
+const { COMMENT_SYMBOLS, LABEL_SYMBOL } = require('./token-types');
 
 /**
  * Read the content of the given RSC program and assemble it to machine code.
@@ -24,21 +23,43 @@ async function assembleRscToMachineCode(rscPath) {
 		})
 		.filter(line => isNotBlank(line)); // Removing blank lines.
 
-	return cleanedLines
-		.map((line, index) => {
+	// Labels indexing
+	const labeledLines = [];
+	const labelsIndex = {};
+	cleanedLines.forEach((line, lineIndex) => {
+		if (!line.startsWith(LABEL_SYMBOL)) {
+			labeledLines.push(line);
+			return;
+		}
+
+		const tokens = line.split(/\s+/);
+		const label = tokens.shift().replace(LABEL_SYMBOL, '');
+
+		if (labelsIndex[label] != null) {
+			throw new Error(`at line ${ lineIndex + 1 }: Label ${ label } has already been defined.`);
+		}
+
+		labelsIndex[label] = labeledLines.length;
+		if (tokens.length > 0) {
+			labeledLines.push(tokens.join(' '));
+		}
+	});
+
+	return labeledLines
+		.map((line, lineIndex) => {
 			const tokens = line.split(/\s+/); // split by spaces
 			const instructionToken = tokens.shift();
 			const instruction = Instructions[instructionToken.toUpperCase()];
 			if (instruction == null) {
-				throw new Error(`at line ${ index + 1 }: '${ instructionToken }' does not match any known instruction.`);
+				throw new Error(`at line ${ lineIndex + 1 }: '${ instructionToken }' does not match any known instruction.`);
 			}
 
-			const error = instruction.validatePattern(tokens);
+			const error = instruction.validatePattern(tokens, labelsIndex);
 			if (error != null) {
-				throw new Error(`at line ${ index + 1 }: ${ error.message }`);
+				throw new Error(`at line ${ lineIndex + 1 }: ${ error.message }`);
 			}
 
-			return instruction.assemble(tokens);
+			return instruction.assemble(tokens, labelsIndex);
 		});
 }
 

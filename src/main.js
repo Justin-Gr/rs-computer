@@ -3,7 +3,7 @@ const { binaryRepresentation } = require('./utils/number-utils');
 const { INSTRUCTION_SIZE } = require('./rsc-assembler/instructions');
 const { generateSchemFromMachineCode } = require('./schem-generator/schem-generator');
 
-const FILENAME = 'fibonacci_ugly';
+const FILENAME = 'jmp_test';
 const RSC_PATH = `./programs/${ FILENAME }.rsc`;
 const SCHEM_PATH = `./build/${ FILENAME }.schem`;
 
@@ -17,7 +17,7 @@ async function main() {
 			.join('\n');
 		console.log(machineCodePretty);
 
-		await generateSchemFromMachineCode(machineCode, SCHEM_PATH);
+		// await generateSchemFromMachineCode(machineCode, SCHEM_PATH);
 	}
 	catch (error) {
 		console.error(error);
