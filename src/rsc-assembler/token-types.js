@@ -91,44 +91,67 @@ const REGISTER = new TokenType(
 		return Number(token.slice(1)); // r15 → 15
 	}
 );
-const INSTRUCTION_ADDRESS = new TokenType(
-	10,
-	(token, labelsIndex) => {
-		let instructionAddress;
-		if (token.startsWith(LABEL_SYMBOL)) {
-			const label = token.replace(LABEL_SYMBOL, '');
-			instructionAddress = labelsIndex[label];
+const INSTRUCTION_ADDRESS = (() => {
+	const size = 10;
+	return new TokenType(
+		size,
+		(token, labelsIndex) => {
+			let instructionAddress;
+			if (token.startsWith(LABEL_SYMBOL)) {
+				const label = token.replace(LABEL_SYMBOL, '');
+				instructionAddress = labelsIndex[label];
 
-			if (instructionAddress == null) {
-				return new Error(`Unknown label ${ label }.`);
+				if (instructionAddress == null) {
+					return new Error(`Unknown label ${ label }.`);
+				}
+			}
+			else {
+				instructionAddress = Number(token);
+			}
+
+			return !isNaN(instructionAddress) && instructionAddress >= 0 && instructionAddress <= maxUIntValue(size)
+				? null
+				: new Error(`${ token } is not a valid representation of ${ a(size) }-bit instruction address.`);
+		},
+		(token, labelsIndex) => {
+			if (token.startsWith(LABEL_SYMBOL)) {
+				const label = token.replace(LABEL_SYMBOL, '');
+				return labelsIndex[label];
+			}
+			else {
+				return Number(token);
 			}
 		}
-		else {
-			instructionAddress = Number(token);
-		}
+	);
+})();
+const FLAG = (() => {
+	const size = 2;
+	const indexedMnemonics = [
+		['z', 'zero', 'eq', '=='],    //   zero -> a == b
+		['!z', '!zero', '!eq', '!='], //  !zero -> a != b
+		['c', 'carry', 'gt', '>='],   //  carry -> a >= b
+		['!c', '!carry', 'lt', '<']   // !carry -> a < b
+	];
 
-		return !isNaN(instructionAddress) && instructionAddress >= 0 && instructionAddress <= maxUIntValue(10)
-			? null
-			: new Error(`${ token } is not a valid representation of a 10-bit instruction address.`);
-	},
-	(token, labelsIndex) => {
-		if (token.startsWith(LABEL_SYMBOL)) {
-			const label = token.replace(LABEL_SYMBOL, '');
-			return labelsIndex[label];
+	return new TokenType(
+		size,
+		(token) => {
+			const tokenNumber = Number(token);
+			const isValidNumber = !isNaN(tokenNumber) && tokenNumber >= 0 && tokenNumber <= maxUIntValue(size);
+			const isValidMnemonic = indexedMnemonics.some(mnemonics => mnemonics.includes(token));
+
+			return isValidNumber || isValidMnemonic
+				? null
+				: new Error(`${ token } does not match any known flag.`);
+		},
+		(token) => {
+			const tokenNumber = Number(token);
+			return !isNaN(tokenNumber)
+				? tokenNumber
+				: indexedMnemonics.findIndex(mnemonics => mnemonics.includes(token));
 		}
-		else {
-			return Number(token);
-		}
-	}
-);
-// TODO JGN
-const FLAG = new TokenType(
-	2,
-	(token) => {
-	},
-	(token) => {
-	}
-);
+	);
+})();
 
 module.exports = {
 	COMMENT_SYMBOLS,
