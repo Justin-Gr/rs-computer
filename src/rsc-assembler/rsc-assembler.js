@@ -35,6 +35,7 @@ async function assembleRscToMachineCode(rscPath) {
 		const tokens = line.split(/\s+/);
 		const label = tokens.shift().replace(LABEL_SYMBOL, '');
 
+		// Labels must be unique.
 		if (labelsIndex[label] != null) {
 			throw new Error(`at line ${ lineIndex + 1 }: Label ${ label } has already been defined.`);
 		}
@@ -48,6 +49,7 @@ async function assembleRscToMachineCode(rscPath) {
 	return labeledLines
 		.map((line, lineIndex) => {
 			const tokens = line.split(/\s+/); // split by spaces
+
 			const instructionToken = tokens.shift();
 			const instruction = Instructions[instructionToken.toUpperCase()];
 			if (instruction == null) {

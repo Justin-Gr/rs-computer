@@ -5,7 +5,7 @@ LDI r3 0 // A * B
 
 .loop
 ADD r3 r3 r1
-ADI r2 -1
+DEC r2
 BRC !zero .loop
 
 HLT

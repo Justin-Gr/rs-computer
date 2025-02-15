@@ -96,11 +96,13 @@ const INSTRUCTION_ADDRESS = (() => {
 	return new TokenType(
 		size,
 		(token, labelsIndex) => {
+			// We are looking for either a valid label or a valid direct instruction address.
 			let instructionAddress;
 			if (token.startsWith(LABEL_SYMBOL)) {
 				const label = token.replace(LABEL_SYMBOL, '');
 				instructionAddress = labelsIndex[label];
 
+				// If no indexed label corresponds to the given label.
 				if (instructionAddress == null) {
 					return new Error(`Unknown label ${ label }.`);
 				}

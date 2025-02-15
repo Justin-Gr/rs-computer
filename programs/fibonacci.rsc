@@ -10,10 +10,10 @@ BRC < .end
 
 .loop
 ADD r3 r1 r2 // U(n) = U(n-2) + U(n-1)
-ADD r1 r2 r0 // r1 ← r2
-ADD r2 r3 r0 // r2 ← r3
+LDR r1 r2 // r1 ← r2
+LDR r2 r3 // r2 ← r3
 
-ADI r4 -1 // n--
+DEC r4 // n--
 BRC >= .loop // while n >= 0
 
 .end HLT

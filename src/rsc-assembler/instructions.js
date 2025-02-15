@@ -3,16 +3,14 @@ const { REGISTER, INT, BLANK, INSTRUCTION_ADDRESS, FLAG } = require('./token-typ
 const INSTRUCTION_SIZE = 16;
 const OPCODE_SIZE = 4;
 
-class Instruction {
+class AbstractInstruction {
 
 	/**
 	 * Parameterized constructor.
 	 *
-	 * @param opcode {number} The opcode.
 	 * @param pattern {TokenType[]} An array specifying the token types that the instruction must follow.
 	 */
-	constructor(opcode, pattern) {
-		this.opcode = opcode;
+	constructor(pattern) {
 		this.pattern = pattern;
 	}
 
@@ -26,7 +24,7 @@ class Instruction {
 	 */
 	validatePattern(tokens, labelsIndex) {
 		const expectedPattern = this.pattern.filter(tokenType => tokenType.consumeToken);
-		
+
 		if (tokens.length !== expectedPattern.length) {
 			return Error(`Too ${ tokens.length > expectedPattern.length ? 'many' : 'few' } arguments. Expected ${ expectedPattern.length } but got ${ tokens.length }.`);
 		}
@@ -35,6 +33,32 @@ class Instruction {
 			.map((tokenType, index) => tokenType.validate(tokens[index], labelsIndex))
 			.filter(error => error != null)
 			.shift() ?? null;
+	}
+
+	/**
+	 * Generates the machine code of the instruction using the provided tokens.
+	 *
+	 * @abstract
+	 * @param tokens {string[]} The tokens to be used.
+	 * @param labelsIndex {{string:number}} TODO JGN
+	 * @returns {number} The resulting machine code of the instruction.
+	 */
+	assemble(tokens, labelsIndex){
+		throw new Error('Must be implemented by subclasses.');
+	}
+}
+
+class Instruction extends AbstractInstruction {
+
+	/**
+	 * Parameterized constructor.
+	 *
+	 * @param opcode {number} The opcode.
+	 * @param pattern {TokenType[]} An array specifying the token types that the instruction must follow.
+	 */
+	constructor(opcode, pattern) {
+		super(pattern);
+		this.opcode = opcode;
 	}
 
 	/**
@@ -57,7 +81,35 @@ class Instruction {
 	}
 }
 
-const Instructions = Object.freeze({
+class PseudoInstruction extends AbstractInstruction {
+
+	/**
+	 * Parameterized constructor.
+	 *
+	 * @param baseInstruction {Instruction} TODO JGN
+	 * @param pattern {TokenType[]} An array specifying the token types that the instruction must follow.
+	 * @param tokenTransformation {function(string[]):string[]} TODO JGN
+	 */
+	constructor(baseInstruction, pattern, tokenTransformation) {
+		super(pattern);
+		this.baseInstruction = baseInstruction;
+		this.tokenTransformation = tokenTransformation;
+	}
+
+	/**
+	 * Generates the machine code of the instruction using the provided tokens.
+	 * TODO JGN Pseudo instruction particularity
+	 *
+	 * @param tokens {string[]} The tokens to be used.
+	 * @param labelsIndex {{string:number}} TODO JGN
+	 * @returns {number} The resulting machine code of the instruction.
+	 */
+	assemble(tokens, labelsIndex) {
+		return this.baseInstruction.assemble(this.tokenTransformation(tokens), labelsIndex);
+	}
+}
+
+const Instructions = {
 	NOP: new Instruction(
 		0,
 		[]
@@ -106,9 +158,31 @@ const Instructions = Object.freeze({
 		11,
 		[FLAG, INSTRUCTION_ADDRESS]
 	)
-});
+};
+const PseudoInstructions = {
+	LDR: new PseudoInstruction(
+		Instructions.ADD,
+		[REGISTER, REGISTER],
+		([writeRegister, registerA]) => [writeRegister, registerA, 'r0']
+	),
+	INC: new PseudoInstruction(
+		Instructions.ADI,
+		[REGISTER],
+		([writeRegister]) => [writeRegister, '1']
+	),
+	DEC: new PseudoInstruction(
+		Instructions.ADI,
+		[REGISTER],
+		([writeRegister]) => [writeRegister, '-1']
+	),
+	CMP: new PseudoInstruction(
+		Instructions.SUB,
+		[REGISTER, REGISTER],
+		([registerA, registerB]) => ['r0', registerA, registerB]
+	)
+};
 
 module.exports = {
 	INSTRUCTION_SIZE,
-	Instructions
+	Instructions: Object.freeze(Object.assign({}, Instructions, PseudoInstructions))
 };
