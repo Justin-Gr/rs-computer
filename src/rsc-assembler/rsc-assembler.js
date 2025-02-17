@@ -24,29 +24,30 @@ async function assembleRscToMachineCode(rscPath) {
 		.filter(line => isNotBlank(line)); // Removing blank lines.
 
 	// Labels indexing
-	const labeledLines = [];
-	const labelsIndex = {};
+	const labelIndices = {};
+	const processedLines = [];
 	cleanedLines.forEach((line, lineIndex) => {
 		if (!line.startsWith(LABEL_SYMBOL)) {
-			labeledLines.push(line);
+			processedLines.push(line);
 			return;
 		}
 
-		const tokens = line.split(/\s+/);
+		const tokens = line.split(/\s+/); // split by spaces
 		const label = tokens.shift().replace(LABEL_SYMBOL, '');
 
 		// Labels must be unique.
-		if (labelsIndex[label] != null) {
+		if (labelIndices[label] != null) {
 			throw new Error(`at line ${ lineIndex + 1 }: Label ${ label } has already been defined.`);
 		}
 
-		labelsIndex[label] = labeledLines.length;
+		labelIndices[label] = processedLines.length;
+		// If there are some tokens left, we put them back (happens when the label is on the beginning of a line).
 		if (tokens.length > 0) {
-			labeledLines.push(tokens.join(' '));
+			processedLines.push(tokens.join(' '));
 		}
 	});
 
-	return labeledLines
+	return processedLines
 		.map((line, lineIndex) => {
 			const tokens = line.split(/\s+/); // split by spaces
 
@@ -56,12 +57,12 @@ async function assembleRscToMachineCode(rscPath) {
 				throw new Error(`at line ${ lineIndex + 1 }: '${ instructionToken }' does not match any known instruction.`);
 			}
 
-			const error = instruction.validatePattern(tokens, labelsIndex);
+			const error = instruction.validatePattern(tokens, labelIndices);
 			if (error != null) {
 				throw new Error(`at line ${ lineIndex + 1 }: ${ error.message }`);
 			}
 
-			return instruction.assemble(tokens, labelsIndex);
+			return instruction.assemble(tokens, labelIndices);
 		});
 }
 

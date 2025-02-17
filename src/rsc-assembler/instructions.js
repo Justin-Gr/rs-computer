@@ -19,10 +19,10 @@ class AbstractInstruction {
 	 * Returns the first validation error encountered, or null if all tokens are valid.
 	 *
 	 * @param tokens {string[]} The tokens to validate.
-	 * @param labelsIndex {{string:number}} TODO JGN
+	 * @param labelIndices {{string:number}} The instruction line index for each known label.
 	 * @returns {Error|null} The first validation error encountered, or null if all tokens are valid.
 	 */
-	validatePattern(tokens, labelsIndex) {
+	validatePattern(tokens, labelIndices) {
 		const expectedPattern = this.pattern.filter(tokenType => tokenType.consumeToken);
 
 		if (tokens.length !== expectedPattern.length) {
@@ -30,20 +30,20 @@ class AbstractInstruction {
 		}
 
 		return expectedPattern
-			.map((tokenType, index) => tokenType.validate(tokens[index], labelsIndex))
+			.map((tokenType, index) => tokenType.validate(tokens[index], labelIndices))
 			.filter(error => error != null)
 			.shift() ?? null;
 	}
 
 	/**
-	 * Generates the machine code of the instruction using the provided tokens.
+	 * Assemble the machine code of the instruction using the provided tokens.
 	 *
 	 * @abstract
 	 * @param tokens {string[]} The tokens to be used.
-	 * @param labelsIndex {{string:number}} TODO JGN
+	 * @param labelIndices {{string:number}} The instruction line index for each known label.
 	 * @returns {number} The resulting machine code of the instruction.
 	 */
-	assemble(tokens, labelsIndex){
+	assemble(tokens, labelIndices){
 		throw new Error('Must be implemented by subclasses.');
 	}
 }
@@ -62,19 +62,19 @@ class Instruction extends AbstractInstruction {
 	}
 
 	/**
-	 * Generates the machine code of the instruction using the provided tokens.
+	 * Assemble the machine code of the instruction using the provided tokens.
 	 *
 	 * @param tokens {string[]} The tokens to be used.
-	 * @param labelsIndex {{string:number}} TODO JGN
+	 * @param labelIndices {{string:number}} The instruction line index for each known label.
 	 * @returns {number} The resulting machine code of the instruction.
 	 */
-	assemble(tokens, labelsIndex) {
+	assemble(tokens, labelIndices) {
 		let machineCode = this.opcode;
 		let availableBits = INSTRUCTION_SIZE - OPCODE_SIZE;
 		const remainingTokens = [...tokens]; // Clones the token array
 		this.pattern.forEach(tokenType => {
 			const token = tokenType.consumeToken ? remainingTokens.shift() : null;
-			machineCode = (machineCode << tokenType.size) | tokenType.assemble(token, labelsIndex);
+			machineCode = (machineCode << tokenType.size) | tokenType.assemble(token, labelIndices);
 			availableBits -= tokenType.size;
 		});
 		return machineCode << availableBits;
@@ -86,26 +86,27 @@ class PseudoInstruction extends AbstractInstruction {
 	/**
 	 * Parameterized constructor.
 	 *
-	 * @param baseInstruction {Instruction} TODO JGN
+	 * @param baseInstruction {Instruction} The base instruction corresponding to the pseudo-instruction.
 	 * @param pattern {TokenType[]} An array specifying the token types that the instruction must follow.
-	 * @param tokenTransformation {function(string[]):string[]} TODO JGN
+	 * @param tokenAdapter {function(string[]):string[]} An adapter that transforms the tokens of the pseudo-instruction to those needed by its corresponding base instruction.
 	 */
-	constructor(baseInstruction, pattern, tokenTransformation) {
+	constructor(baseInstruction, pattern, tokenAdapter) {
 		super(pattern);
 		this.baseInstruction = baseInstruction;
-		this.tokenTransformation = tokenTransformation;
+		this.tokenAdapter = tokenAdapter;
 	}
 
 	/**
-	 * Generates the machine code of the instruction using the provided tokens.
-	 * TODO JGN Pseudo instruction particularity
+	 * Assembles the machine code of the pseudo-instruction by adapting the provided tokens
+	 * and delegating the assembly process to its base instruction.
 	 *
 	 * @param tokens {string[]} The tokens to be used.
-	 * @param labelsIndex {{string:number}} TODO JGN
-	 * @returns {number} The resulting machine code of the instruction.
+	 * @param labelIndices {{string:number}} The instruction line index for each known label.
+	 * @returns {number} The resulting machine code of the pseudo-instruction.
 	 */
-	assemble(tokens, labelsIndex) {
-		return this.baseInstruction.assemble(this.tokenTransformation(tokens), labelsIndex);
+	assemble(tokens, labelIndices) {
+		const adaptedTokens = this.tokenAdapter(tokens);
+		return this.baseInstruction.assemble(adaptedTokens, labelIndices);
 	}
 }
 

@@ -26,22 +26,22 @@ class TokenType {
 	 * If the token is invalid, it returns an error. Otherwise, it returns null.
 	 *
 	 * @param token {string} The token to validate.
-	 * @param labelsIndex {{string:number}} TODO JGN
+	 * @param labelIndices {{string:number}} The instruction line index for each known label.
 	 * @returns {Error|null} A validation error if the token is invalid, null otherwise.
 	 */
-	validate(token, labelsIndex) {
-		return this.validator(token, labelsIndex);
+	validate(token, labelIndices) {
+		return this.validator(token, labelIndices);
 	}
 
 	/**
 	 * Generates the machine code using the given token.
 	 *
 	 * @param token {string} The token to be used.
-	 * @param labelsIndex {{string:number}} TODO JGN
+	 * @param labelIndices {{string:number}} The instruction line index for each known label.
 	 * @returns {number} The resulting machine code.
 	 */
-	assemble(token, labelsIndex) {
-		return this.assembler(token, labelsIndex);
+	assemble(token, labelIndices) {
+		return this.assembler(token, labelIndices);
 	}
 }
 
@@ -95,12 +95,12 @@ const INSTRUCTION_ADDRESS = (() => {
 	const size = 10;
 	return new TokenType(
 		size,
-		(token, labelsIndex) => {
+		(token, labelIndices) => {
 			// We are looking for either a valid label or a valid direct instruction address.
 			let instructionAddress;
 			if (token.startsWith(LABEL_SYMBOL)) {
 				const label = token.replace(LABEL_SYMBOL, '');
-				instructionAddress = labelsIndex[label];
+				instructionAddress = labelIndices[label];
 
 				// If no indexed label corresponds to the given label.
 				if (instructionAddress == null) {
@@ -115,10 +115,10 @@ const INSTRUCTION_ADDRESS = (() => {
 				? null
 				: new Error(`${ token } is not a valid representation of ${ a(size) }-bit instruction address.`);
 		},
-		(token, labelsIndex) => {
+		(token, labelIndices) => {
 			if (token.startsWith(LABEL_SYMBOL)) {
 				const label = token.replace(LABEL_SYMBOL, '');
-				return labelsIndex[label];
+				return labelIndices[label];
 			}
 			else {
 				return Number(token);
