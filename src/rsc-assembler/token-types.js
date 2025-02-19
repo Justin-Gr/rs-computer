@@ -10,8 +10,8 @@ class TokenType {
 	 * Parameterized constructor
 	 *
 	 * @param size {number} The expected size of the token (bits).
-	 * @param validator {function(string,?{string:number}):Error|null} A function that validates whether a given token matches the token type.
-	 * @param assembler {function(string,?{string:number}):number} A function that assembles the machine code from the given token.
+	 * @param validator {function(string, ?{[key:string]:number}): Error|null} A function that validates whether a given token matches the token type.
+	 * @param assembler {function(string, ?{[key:string]:number}): number} A function that assembles the machine code from the given token.
 	 * @param consumeToken {?boolean} Indicates if the tokenType consumes a token when used in an instruction.
 	 */
 	constructor(size, validator, assembler, consumeToken = true) {
@@ -26,7 +26,7 @@ class TokenType {
 	 * If the token is invalid, it returns an error. Otherwise, it returns null.
 	 *
 	 * @param token {string} The token to validate.
-	 * @param labelIndices {{string:number}} The instruction line index for each known label.
+	 * @param labelIndices {{[key:string]:number}} The instruction line index for each known label.
 	 * @returns {Error|null} A validation error if the token is invalid, null otherwise.
 	 */
 	validate(token, labelIndices) {
@@ -37,7 +37,7 @@ class TokenType {
 	 * Generates the machine code using the given token.
 	 *
 	 * @param token {string} The token to be used.
-	 * @param labelIndices {{string:number}} The instruction line index for each known label.
+	 * @param labelIndices {{[key:string]:number}} The instruction line index for each known label.
 	 * @returns {number} The resulting machine code.
 	 */
 	assemble(token, labelIndices) {
@@ -140,7 +140,7 @@ const FLAG = (() => {
 		(token) => {
 			const tokenNumber = Number(token);
 			const isValidNumber = !isNaN(tokenNumber) && tokenNumber >= 0 && tokenNumber <= maxUIntValue(size);
-			const isValidMnemonic = indexedMnemonics.some(mnemonics => mnemonics.includes(token));
+			const isValidMnemonic = indexedMnemonics.some(mnemonics => mnemonics.includes(token.toLowerCase()));
 
 			return isValidNumber || isValidMnemonic
 				? null
@@ -150,7 +150,7 @@ const FLAG = (() => {
 			const tokenNumber = Number(token);
 			return !isNaN(tokenNumber)
 				? tokenNumber
-				: indexedMnemonics.findIndex(mnemonics => mnemonics.includes(token));
+				: indexedMnemonics.findIndex(mnemonics => mnemonics.includes(token.toLowerCase()));
 		}
 	);
 })();

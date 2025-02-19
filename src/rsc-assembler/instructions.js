@@ -19,7 +19,7 @@ class AbstractInstruction {
 	 * Returns the first validation error encountered, or null if all tokens are valid.
 	 *
 	 * @param tokens {string[]} The tokens to validate.
-	 * @param labelIndices {{string:number}} The instruction line index for each known label.
+	 * @param labelIndices {{[key:string]:number}} The instruction line index for each known label.
 	 * @returns {Error|null} The first validation error encountered, or null if all tokens are valid.
 	 */
 	validatePattern(tokens, labelIndices) {
@@ -40,7 +40,7 @@ class AbstractInstruction {
 	 *
 	 * @abstract
 	 * @param tokens {string[]} The tokens to be used.
-	 * @param labelIndices {{string:number}} The instruction line index for each known label.
+	 * @param labelIndices {{[key:string]:number}} The instruction line index for each known label.
 	 * @returns {number} The resulting machine code of the instruction.
 	 */
 	assemble(tokens, labelIndices){
@@ -65,7 +65,7 @@ class Instruction extends AbstractInstruction {
 	 * Assemble the machine code of the instruction using the provided tokens.
 	 *
 	 * @param tokens {string[]} The tokens to be used.
-	 * @param labelIndices {{string:number}} The instruction line index for each known label.
+	 * @param labelIndices {{[key:string]:number}} The instruction line index for each known label.
 	 * @returns {number} The resulting machine code of the instruction.
 	 */
 	assemble(tokens, labelIndices) {
@@ -101,7 +101,7 @@ class PseudoInstruction extends AbstractInstruction {
 	 * and delegating the assembly process to its base instruction.
 	 *
 	 * @param tokens {string[]} The tokens to be used.
-	 * @param labelIndices {{string:number}} The instruction line index for each known label.
+	 * @param labelIndices {{[key:string]:number}} The instruction line index for each known label.
 	 * @returns {number} The resulting machine code of the pseudo-instruction.
 	 */
 	assemble(tokens, labelIndices) {
@@ -110,6 +110,9 @@ class PseudoInstruction extends AbstractInstruction {
 	}
 }
 
+/**
+ * @type {{[key:string]:Instruction}}
+ */
 const Instructions = {
 	NOP: new Instruction(
 		0,
@@ -160,6 +163,9 @@ const Instructions = {
 		[FLAG, INSTRUCTION_ADDRESS]
 	)
 };
+/**
+ * @type {{[key:string]:PseudoInstruction}}
+ */
 const PseudoInstructions = {
 	LDR: new PseudoInstruction(
 		Instructions.ADD,

@@ -1,12 +1,12 @@
+const MC_VERSION = '1.18.2';
+
 const fs = require('fs').promises;
 const { Schematic } = require('prismarine-schematic');
 const { Vec3 } = require('vec3');
 const { INSTRUCTION_SIZE } = require('../rsc-assembler/instructions');
 const { maxUIntValue } = require('../utils/number-utils');
-const registry = require('prismarine-registry')('1.18.2');
+const registry = require('prismarine-registry')(MC_VERSION);
 const Block = require('prismarine-block')(registry);
-
-const MC_VERSION = '1.18.2';
 
 const WOOL_BLOCK = Block.fromString('minecraft:magenta_wool', 0);
 const REPEATER_BLOCK = Block.fromString('minecraft:repeater[facing=north,locked=false,powered=false]', 0);

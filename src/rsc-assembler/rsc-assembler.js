@@ -25,10 +25,10 @@ async function assembleRscToMachineCode(rscPath) {
 
 	// Labels indexing
 	const labelIndices = {};
-	const processedLines = [];
+	const instructionLines = [];
 	cleanedLines.forEach((line, lineIndex) => {
 		if (!line.startsWith(LABEL_SYMBOL)) {
-			processedLines.push(line);
+			instructionLines.push(line);
 			return;
 		}
 
@@ -40,14 +40,14 @@ async function assembleRscToMachineCode(rscPath) {
 			throw new Error(`at line ${ lineIndex + 1 }: Label ${ label } has already been defined.`);
 		}
 
-		labelIndices[label] = processedLines.length;
+		labelIndices[label] = instructionLines.length;
 		// If there are some tokens left, we put them back (happens when the label is on the beginning of a line).
 		if (tokens.length > 0) {
-			processedLines.push(tokens.join(' '));
+			instructionLines.push(tokens.join(' '));
 		}
 	});
 
-	return processedLines
+	return instructionLines
 		.map((line, lineIndex) => {
 			const tokens = line.split(/\s+/); // split by spaces
 
