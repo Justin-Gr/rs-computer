@@ -123,69 +123,84 @@ const Instructions = {
 		[]
 	),
 	ADD: new Instruction(
-		2,
-		[REGISTER, REGISTER, REGISTER]
+		2,                             // W ← RA + RB
+		[REGISTER, REGISTER, REGISTER] // [W, RA, RB]
 	),
 	SUB: new Instruction(
-		3,
-		[REGISTER, REGISTER, REGISTER]
+		3,                             // W ← RA - RB
+		[REGISTER, REGISTER, REGISTER] // [W, RA, RB]
 	),
 	NOR: new Instruction(
-		4,
-		[REGISTER, REGISTER, REGISTER]
+		4,                             // W ← !(RA | RB)
+		[REGISTER, REGISTER, REGISTER] // [W, RA, RB]
 	),
 	AND: new Instruction(
-		5,
-		[REGISTER, REGISTER, REGISTER]
+		5,                             // W ← RA & RB
+		[REGISTER, REGISTER, REGISTER] // [W, RA, RB]
 	),
 	XOR: new Instruction(
-		6,
-		[REGISTER, REGISTER, REGISTER]
+		6,                             // W ← RA ^ RB
+		[REGISTER, REGISTER, REGISTER] // [W, RA, RB]
 	),
 	RSH: new Instruction(
-		7,
-		[REGISTER, REGISTER]
+		7,                   // W ← RA >> 1
+		[REGISTER, REGISTER] // [W, RA]
 	),
 	LDI: new Instruction(
-		8,
-		[REGISTER, INT(8)]
+		8,                      // W ← Value
+		[REGISTER, INT(8)] // [W, Value]
 	),
 	ADI: new Instruction(
-		9,
-		[REGISTER, INT(8)]
+		9,                      // W ← W + Value
+		[REGISTER, INT(8)] // [W, Value]
 	),
 	JMP: new Instruction(
-		10,
-		[BLANK(2), INSTRUCTION_ADDRESS]
+		10,                                  // PC ← Address
+		[BLANK(2), INSTRUCTION_ADDRESS] // [void, Address]
 	),
 	BRC: new Instruction(
-		11,
-		[FLAG, INSTRUCTION_ADDRESS]
+		11,                         // If Flag then PC ← Address
+		[FLAG, INSTRUCTION_ADDRESS] // [Flag, Address]
 	)
 };
 /**
  * @type {{[key:string]:PseudoInstruction}}
  */
 const PseudoInstructions = {
-	LDR: new PseudoInstruction(
-		Instructions.ADD,
-		[REGISTER, REGISTER],
+	MOV: new PseudoInstruction(      // W ← RA
+		Instructions.ADD,            // W ← RA + R0
+		[REGISTER, REGISTER], // [W, RA]
 		([writeRegister, registerA]) => [writeRegister, registerA, 'r0']
 	),
-	INC: new PseudoInstruction(
-		Instructions.ADI,
-		[REGISTER],
+	INC: new PseudoInstruction(      // W++
+		Instructions.ADI,            // W ← W + 1
+		[REGISTER],           // [W]
 		([writeRegister]) => [writeRegister, '1']
 	),
-	DEC: new PseudoInstruction(
-		Instructions.ADI,
-		[REGISTER],
+	DEC: new PseudoInstruction(      // W--
+		Instructions.ADI,            // W ← W - 1
+		[REGISTER],           // [W]
 		([writeRegister]) => [writeRegister, '-1']
 	),
-	CMP: new PseudoInstruction(
-		Instructions.SUB,
-		[REGISTER, REGISTER],
+	CMP: new PseudoInstruction(      // Compares RA and RB
+		Instructions.SUB,            // R0 ← RA - RB
+		[REGISTER, REGISTER], // [RA, RB]
 		([registerA, registerB]) => ['r0', registerA, registerB]
+	),
+	LSH: new PseudoInstruction(      // W ← RA << 1
+		Instructions.ADD,            // W ← RA + RA
+		[REGISTER, REGISTER], // [W, RA]
+		([writeRegister, registerA]) => [writeRegister, registerA, registerA]
+	),
+	NOT: new PseudoInstruction(      // W ← !RA
+		Instructions.XOR,            // W ← RA ^ 0xFF
+		[REGISTER, REGISTER], // [W, RA]
+		([writeRegister, registerA]) => [writeRegister, registerA, '0xFF']
+	),
+	NEG: new PseudoInstruction(      // W ← -RA
+		Instructions.SUB,            // W ← R0 - RA
+		[REGISTER, REGISTER], // [W, RA]
+		([writeRegister, registerA]) => [writeRegister, 'r0', registerA]
 	)
 };
 
