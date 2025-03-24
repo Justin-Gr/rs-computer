@@ -57,15 +57,17 @@ const UINT = (size) => new TokenType(
 		return Number(token);
 	}
 );
-const INT = (size) => new TokenType(
+const INT = (size, strict = false) => new TokenType(
 	size,
 	(token) => {
 		const tokenNumber = Number(token); // supports 0b and 0x notation
-		// 8-bit example : accepts values from -128 to 255 (not just -128 to 127)
-		// What matters is the bit value held by the token
-		return !isNaN(tokenNumber) && tokenNumber >= -maxUIntValue(size - 1) - 1 && tokenNumber <= maxUIntValue(size)
+		const maxValue = strict ? maxUIntValue(size - 1) : maxUIntValue(size);
+
+		// 8-bit example with non-strict mode : accepts values from -128 to 255 (unlike strict-mode which only accepts values from -128 to 127)
+		// Non-strict mode is a thing because sometimes we only matters about the bit value held by the token
+		return !isNaN(tokenNumber) && tokenNumber >= -maxUIntValue(size - 1) - 1 && tokenNumber <= maxValue
 			? null
-			: new Error(`'${ token }' is not a valid representation of ${ a(size) }-bit integer.`);
+			: new Error(`'${ token }' is not a valid representation of ${ a(size) }-bit ${ strict ? 'signed' : '' } integer.`);
 	},
 	(token) => {
 		const value = Number(token)

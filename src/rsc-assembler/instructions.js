@@ -114,91 +114,119 @@ class PseudoInstruction extends AbstractInstruction {
  * @type {{[key:string]:Instruction}}
  */
 const Instructions = {
+	// No operation
 	NOP: new Instruction(
 		0,
 		[]
 	),
+	// Halts the program
 	HLT: new Instruction(
 		1,
 		[]
 	),
+	// W ← RA + RB
 	ADD: new Instruction(
-		2,                             // W ← RA + RB
+		2,
 		[REGISTER, REGISTER, REGISTER] // [W, RA, RB]
 	),
+	// W ← RA - RB
 	SUB: new Instruction(
-		3,                             // W ← RA - RB
+		3,
 		[REGISTER, REGISTER, REGISTER] // [W, RA, RB]
 	),
+	// W ← !(RA | RB)
 	NOR: new Instruction(
-		4,                             // W ← !(RA | RB)
+		4,
 		[REGISTER, REGISTER, REGISTER] // [W, RA, RB]
 	),
+	// W ← RA & RB
 	AND: new Instruction(
-		5,                             // W ← RA & RB
+		5,
 		[REGISTER, REGISTER, REGISTER] // [W, RA, RB]
 	),
+	// W ← RA ^ RB
 	XOR: new Instruction(
-		6,                             // W ← RA ^ RB
+		6,
 		[REGISTER, REGISTER, REGISTER] // [W, RA, RB]
 	),
+	// W ← RA >> 1
 	RSH: new Instruction(
-		7,                   // W ← RA >> 1
+		7,
 		[REGISTER, REGISTER] // [W, RA]
 	),
 	LDI: new Instruction(
 		8,                      // W ← Value
 		[REGISTER, INT(8)] // [W, Value]
 	),
+	// W ← W + Value
 	ADI: new Instruction(
-		9,                      // W ← W + Value
+		9,
 		[REGISTER, INT(8)] // [W, Value]
 	),
+	// PC ← Address
 	JMP: new Instruction(
-		10,                                  // PC ← Address
+		10,
 		[BLANK(2), INSTRUCTION_ADDRESS] // [void, Address]
 	),
+	// If Flag then PC ← Address
 	BRC: new Instruction(
-		11,                         // If Flag then PC ← Address
+		11,
 		[FLAG, INSTRUCTION_ADDRESS] // [Flag, Address]
+	),
+	// W ← Data[RA + Offset]
+	RED: new Instruction(
+		12,
+		[REGISTER, REGISTER, INT(4, true)] // [W, RA, Offset]
+	),
+	// Data[RA + Offset] ← RB
+	WRT: new Instruction(
+		13,
+		[REGISTER, REGISTER, INT(4, true)] // [RB, RA, Offset]
 	)
 };
 /**
  * @type {{[key:string]:PseudoInstruction}}
  */
 const PseudoInstructions = {
-	MOV: new PseudoInstruction(      // W ← RA
-		Instructions.ADD,            // W ← RA + R0
+	// W ← RA (translates to W ← RA + R0)
+	MOV: new PseudoInstruction(
+		Instructions.ADD,
 		[REGISTER, REGISTER], // [W, RA]
 		([writeRegister, registerA]) => [writeRegister, registerA, 'r0']
 	),
-	INC: new PseudoInstruction(      // W++
-		Instructions.ADI,            // W ← W + 1
-		[REGISTER],           // [W]
+	// W++ (translates to W ← W + 1)
+	INC: new PseudoInstruction(
+		Instructions.ADI,
+		[REGISTER], // [W]
 		([writeRegister]) => [writeRegister, '1']
 	),
-	DEC: new PseudoInstruction(      // W--
-		Instructions.ADI,            // W ← W - 1
-		[REGISTER],           // [W]
+	// W-- (translates to W ← W - 1)
+	DEC: new PseudoInstruction(
+		Instructions.ADI,
+		[REGISTER], // [W]
 		([writeRegister]) => [writeRegister, '-1']
 	),
-	CMP: new PseudoInstruction(      // Compares RA and RB
-		Instructions.SUB,            // R0 ← RA - RB
+	// Compares RA and RB (translates to R0 ← RA - RB)
+	CMP: new PseudoInstruction(
+		Instructions.SUB,
 		[REGISTER, REGISTER], // [RA, RB]
 		([registerA, registerB]) => ['r0', registerA, registerB]
 	),
-	LSH: new PseudoInstruction(      // W ← RA << 1
-		Instructions.ADD,            // W ← RA + RA
+	// W ← RA << 1 (translates to W ← RA + RA)
+	LSH: new PseudoInstruction(
+		Instructions.ADD,
 		[REGISTER, REGISTER], // [W, RA]
 		([writeRegister, registerA]) => [writeRegister, registerA, registerA]
 	),
-	NOT: new PseudoInstruction(      // W ← !RA
-		Instructions.XOR,            // W ← RA ^ 0xFF
+	// W ← !RA (translates to W ← RA ^ 0xFF)
+	NOT: new PseudoInstruction(
+		Instructions.XOR,
 		[REGISTER, REGISTER], // [W, RA]
 		([writeRegister, registerA]) => [writeRegister, registerA, '0xFF']
 	),
-	NEG: new PseudoInstruction(      // W ← -RA
-		Instructions.SUB,            // W ← R0 - RA
+	// W ← -RA (translates to W ← R0 - RA
+	NEG: new PseudoInstruction(
+		Instructions.SUB,
 		[REGISTER, REGISTER], // [W, RA]
 		([writeRegister, registerA]) => [writeRegister, 'r0', registerA]
 	)
